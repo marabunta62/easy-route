@@ -8,17 +8,46 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@quasar/extras": "^1.0.0",
+    "@tomtom-international/web-sdk-maps": "^6.18.0",
+    "axios": "^0.26.1",
     "core-js": "^3.8.3",
-    "vue": "^3.2.13"
+    "eslint": "^8.14.0",
+    "eslint-plugin-promise": "^6.0.0",
+    "quasar": "^2.0.0",
+    "s-vuex-class": "^0.4.1",
+    "typescript": "^4.6.3",
+    "vue": "3.2.33",
+    "vue-class-component": "^8.0.0-0",
+    "vue-property-decorator": "^9.1.2",
+    "vue-router": "^4.0.3",
+    "vuejs3-logger": "^1.0.0",
+    "vuex": "^4.0.2",
+    "vuex-module-decorators": "^2.0.0",
+    "vuex-persist": "^3.1.3",
+    "webpack": "^5.72.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",
     "@babel/eslint-parser": "^7.12.16",
+    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "@typescript-eslint/parser": "^5.4.0",
     "@vue/cli-plugin-babel": "~5.0.0",
     "@vue/cli-plugin-eslint": "~5.0.0",
+    "@vue/cli-plugin-router": "~5.0.0",
+    "@vue/cli-plugin-typescript": "~5.0.0",
+    "@vue/cli-plugin-vuex": "~5.0.0",
     "@vue/cli-service": "~5.0.0",
-    "eslint": "^7.32.0",
-    "eslint-plugin-vue": "^8.0.3"
+    "@vue/eslint-config-typescript": "^9.1.0",
+    "css-loader": "^6.7.1",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-vue": "^8.0.3",
+    "prettier": "^2.6.2",
+    "sass": "1.32.12",
+    "sass-loader": "^12.0.0",
+    "typescript": "^4.6.3",
+    "vue-cli-plugin-quasar": "~5.0.1"
   },
   "eslintConfig": {
     "root": true,
@@ -27,17 +56,29 @@
     },
     "extends": [
       "plugin:vue/vue3-essential",
-      "eslint:recommended"
+      "eslint:recommended",
+      "@vue/typescript",
+      "@vue/typescript/recommended",
+      "plugin:prettier/recommended"
     ],
     "parserOptions": {
-      "parser": "@babel/eslint-parser"
+      "parser": "@typescript-eslint/parser",
+      "ecmaVersion": 2020
     },
-    "rules": {}
+    "rules": {
+      "max-len": "off",
+      "max-statements-per-line": "off",
+      "prettier/prettier": "off"
+    }
   },
   "browserslist": [
     "> 1%",
     "last 2 versions",
     "not dead",
     "not ie 11"
-  ]
+  ],
+  "engines": {
+    "node": "^14 || ^16",
+    "npm": "^8"
+  }
 }

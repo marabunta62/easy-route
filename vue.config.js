@@ -1,4 +1,16 @@
-const { defineConfig } = require('@vue/cli-service')
+const { defineConfig } = require("@vue/cli-service");
 module.exports = defineConfig({
-  transpileDependencies: true
-})
+  transpileDependencies: ["quasar", "configEnv"],
+
+  pluginOptions: {
+    quasar: {
+      importStrategy: "combined",
+      rtlSupport: false,
+    },
+    webpack: {
+      dir: ["./webpack"],
+    },
+  },
+
+  runtimeCompiler: true,
+});
