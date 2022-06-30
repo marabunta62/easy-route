@@ -10,6 +10,7 @@
   "dependencies": {
     "@quasar/extras": "^1.0.0",
     "@tomtom-international/web-sdk-maps": "^6.18.0",
+    "@tomtom-international/web-sdk-services": "^6.19.0",
     "axios": "^0.26.1",
     "core-js": "^3.8.3",
     "eslint": "^8.14.0",

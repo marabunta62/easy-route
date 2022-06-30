@@ -2,6 +2,7 @@ import VuexPersistence from "vuex-persist";
 import Vuex, { StoreOptions } from "vuex";
 import CityCoordinatesMd from "@/store/modules/CityCoordinatesMd";
 import PickUpMd from "@/store/modules/PickUpMd";
+import UserMd from "@/store/modules/UserMd";
 
 /* eslint-disable @typescript-eslint/no-empty-interface */
 interface RootState {}
@@ -27,6 +28,7 @@ const storeOptions: StoreOptions<RootState> = {
   modules: {
     CityCoordinatesMd,
     PickUpMd,
+    UserMd
   },
   plugins: [vuexLocal.plugin],
 };

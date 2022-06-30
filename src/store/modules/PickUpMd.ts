@@ -9,6 +9,7 @@ import { convertProxyInJson } from "@/store";
 export default class PickUpMd extends VuexModule {
   private pickUpModel: PickUpModel | null = null;
   private pickUpModelList: PickUpModel2[] | null = null;
+  private selectedPickUpModel: PickUpModel2 | null = null;
 
   get pickUp(): PickUpModel | null {
     return this.pickUpModel;
@@ -16,6 +17,10 @@ export default class PickUpMd extends VuexModule {
 
   get pickUpList(): PickUpModel2[] | null {
     return convertProxyInJson(this.pickUpModelList);
+  }
+
+  get selectedPickUp(): PickUpModel2 | null {
+    return convertProxyInJson(this.selectedPickUpModel);
   }
 
   @Mutation
@@ -26,6 +31,11 @@ export default class PickUpMd extends VuexModule {
   @Mutation
   setPickUpModelList(pickUpModel: PickUpModel2[] | null): void {
     this.pickUpModelList = pickUpModel;
+  }
+
+  @Mutation
+  setSelectedPickUpModel(selectedPickUpModel: PickUpModel2 | null): void {
+    this.selectedPickUpModel = selectedPickUpModel;
   }
 
   @Action({ rawError: true })
@@ -47,6 +57,16 @@ export default class PickUpMd extends VuexModule {
       //console.log("module", pickUpDataList);
     } catch (err) {
       this.context.commit("setPickUpModelList", null);
+      throw err;
+    }
+  }
+
+  @Action({ rawError: true })
+  async selectedCurrentPickUpModel(selectedPickUp: PickUpModel2): Promise<void> {
+    try {
+      this.context.commit("setSelectedPickUpModel", selectedPickUp);
+    } catch (err) {
+      this.context.commit("setPickUpModel", null);
       throw err;
     }
   }

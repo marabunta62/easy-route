@@ -9,7 +9,6 @@ export class PickUpSvc {
 
   async getAllPickUp(): Promise<PickUpModel2[]> {
     const response: AxiosResponse = await axios.get("/pick-up/all");
-    console.log("svc api", response.data)
     return response.data as PickUpModel2[];
   }
 }

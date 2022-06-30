@@ -20,6 +20,6 @@ export interface PickUpModel2 {
 }
 
 export type Coordinates = {
-  lat: number;
   lng: number;
-} | null
+  lat: number;
+}
