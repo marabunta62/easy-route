@@ -2,7 +2,7 @@
   <q-layout view="lHh Lpr lFf">
 
     <q-header elevated class="glossy">
-      <q-toolbar>
+      <q-toolbar class="header__toolbar">
         <q-btn
           flat
           dense
@@ -12,11 +12,11 @@
           icon="menu"
         />
 
-        <q-toolbar-title> Quasar App </q-toolbar-title>
+        <q-toolbar-title class="header__title" @click="goToHome"> Super App </q-toolbar-title>
         <q-btn-dropdown v-if="isUserAuthenticated" class="header__connexion" icon="account_circle" :label="`Bienvenu ${userAuthData.email}`">
-          <q-item clickable v-close-popup>
+          <q-item v-close-popup>
             <q-item-section>
-              <q-item>
+              <q-item clickable @click="goToProfile">
                 <q-item-section avatar>
                   <q-icon name="account_box" />
                 </q-item-section>
@@ -25,7 +25,7 @@
                   <q-item-label caption>Gérer mes informations personelles</q-item-label>
                 </q-item-section>
               </q-item>
-              <q-item>
+              <q-item clickable @click="goToDriver">
                 <q-item-section avatar>
                   <q-icon name="directions_car" />
                 </q-item-section>
@@ -34,7 +34,7 @@
                   <q-item-label caption>Gérer mon trajet et intéragir avec mes passagers</q-item-label>
                 </q-item-section>
               </q-item>
-              <q-item>
+              <q-item clickable @click="goToPassenger()">
                 <q-item-section avatar>
                   <q-icon name="sync_alt" />
                 </q-item-section>
@@ -43,7 +43,16 @@
                   <q-item-label caption>Gérer mes demandes de trajets et intéragir avec les conducteurs</q-item-label>
                 </q-item-section>
               </q-item>
-              <q-item>
+              <q-item clickable>
+                <q-item-section avatar>
+                  <q-icon name="chat" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Messagerie</q-item-label>
+                  <q-item-label caption>Echanger avec les autres usagers de la route</q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-item clickable>
                 <q-item-section avatar>
                   <q-icon name="logout" />
                 </q-item-section>
@@ -130,7 +139,10 @@
     </q-drawer>
 
     <q-page-container>
+<!--
       <HomeView />
+-->
+      <RouterView />
     </q-page-container>
   </q-layout>
 </template>
@@ -142,6 +154,7 @@ import AccountCreateLogin from "@/components/AccountCreateLogin.vue";
 import { Options, Vue } from "vue-class-component";
 import { namespace } from "s-vuex-class";
 import { UserModel } from "@/models/User";
+import { isNavigationFailure, NavigationFailureType } from "vue-router";
 
 const userMd = namespace("UserMd");
 
@@ -176,13 +189,40 @@ export default class LayoutDefault extends Vue {
 
   disConnexion() {
     this.disConnexionAction(true);
+    this.$router.push({ name: 'home'});
   }
 
+  goToProfile() {
+    this.$router.push({ name: 'userProfile'});
+  };
+
+  goToDriver() {
+    this.$router.push({ name: 'userDriver'});
+  }
+
+  goToPassenger() {
+    this.$router.push({ name: 'userPassengers'});
+  }
+
+  goToHome() {
+    this.$router.push({ name: 'home'});
+  }
 
 
 }
 </script>
 <style lang="scss">
+
+.header {
+
+  &__title {
+    cursor: pointer;
+  }
+
+  &__toolbar {
+    justify-content: end;
+  }
+}
 
    .header__connexion > span.q-btn__content.text-center.col.items-center.q-anchor--skip.justify-center.row > i {
      padding-right: .352rem;

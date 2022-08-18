@@ -1,6 +1,5 @@
-import { Module, VuexModule, Mutation, Action } from "vuex-module-decorators";
-import { City, CityCompletion } from "@/models/City";
-import { CityCoordinatesService } from "@/services/z-index";
+import { Action, Module, Mutation, VuexModule } from "vuex-module-decorators";
+import { CityCompletion } from "@/models/City";
 
 @Module({
   namespaced: true,

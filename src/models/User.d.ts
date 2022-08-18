@@ -1,8 +1,13 @@
+import { Driver } from "@/models/Driver";
+import { Passenger } from "@/models/Passenger";
+
 export interface UserModel {
-    userId?: string;
+    userId: number;
     name?: string;
     email: string;
     password: string;
+    driver?: Driver;
+    passenger?: Passenger;
 }
 
 export interface UserAPiNest {

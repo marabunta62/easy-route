@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md q-gutter-lg-x-md">
+  <div>
 
     <q-dialog v-model="connexionPopIn">
       <q-card class="customPopUp">

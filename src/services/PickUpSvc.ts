@@ -1,4 +1,4 @@
-import { PickUpModel, PickUpModel2 } from "@/models/PickUp";
+import { PickUpModel } from "@/models/PickUp";
 import { axios, AxiosResponse } from "@/config/axios";
 
 export class PickUpSvc {
@@ -7,8 +7,8 @@ export class PickUpSvc {
     return response.data as PickUpModel;
   }
 
-  async getAllPickUp(): Promise<PickUpModel2[]> {
+  async getAllPickUp(): Promise<PickUpModel[]> {
     const response: AxiosResponse = await axios.get("/pick-up/all");
-    return response.data as PickUpModel2[];
+    return response.data as PickUpModel[];
   }
 }

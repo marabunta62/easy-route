@@ -13,11 +13,12 @@ import tts from "@tomtom-international/web-sdk-services";
 import { Inject, Watch } from "vue-property-decorator";
 import { namespace } from "s-vuex-class";
 import { CityCompletion } from "@/models/City";
-import { PickUpModel2 } from "@/models/PickUp";
+import { PickUpModel } from "@/models/PickUp";
 import PickUpMd from "@/store/modules/PickUpMd";
 
 const cityCoordinatesMd = namespace("CityCoordinatesMd");
 const pickUpMd = namespace("PickUpMd");
+const userMd = namespace("UserMd");
 
 @Options({
   name: "MapView",
@@ -27,16 +28,19 @@ export default class MapView extends Vue {
   private coordinatesCityMd!: CityCompletion | null;
 
   @pickUpMd.Getter
-  private pickUpList!: PickUpModel2[] | null;
+  private pickUpList!: PickUpModel[] | null;
 
   @pickUpMd.Getter
-  private selectedPickUp!: PickUpModel2 | null;
+  private selectedPickUp!: PickUpModel | null;
 
   @pickUpMd.Action
   private fetchPickUpList!: () => Promise<void>;
 
   @pickUpMd.Action
-  private selectedCurrentPickUpModel!: (selectedCurrentPickUpModel: PickUpModel2) => Promise<void>;
+  private selectedCurrentPickUpModel!: (selectedCurrentPickUpModel: PickUpModel) => Promise<void>;
+
+  @userMd.Getter
+  private isUserAuthenticated!: boolean | null;
 
   @Inject("TOM_TOM_API_KEY")
   private tomTomAPiKey!: string;
@@ -92,10 +96,11 @@ export default class MapView extends Vue {
         const arrivalCityName = element.arrivalCityName;
         const arrivalsCoordinates = element.arrivalCoordinates;
 
-        const name = element.name;
-        const car = element.car;
-        const slots = element.slots;
+        const name = element.driver;
+        const car = element?.pickUpCar?.model;
+        const slots = element?.pickUpCar?.totalSlots;
 
+        //const join = this.isUserAuthenticated ? 'Rejoindre ce trajet!/Créer un compte' : 'Créer un compte pour rejoindre'
         const popIn = `<div class="pop">
                           <h6 class="pop__title">Trajet de ${departureCityName} vers ${arrivalCityName}</h5>
                           <div>Par ${name} - Rank</div>
@@ -111,9 +116,10 @@ export default class MapView extends Vue {
                               </ul>
                           </div>
                           <div class="pop__end">
-                              <button class="pop__button" type="button">Rejoindre ce trajet!</button>
+                              <button class="pop__button" type="button">Rejoindre ce trajet! / Créer un compte</button>
                           </div>
                       </div>`
+
 
         new this.window.Marker({element: departureMarkersDiv, anchor: 'center'})
             .setLngLat(departureCoordinates)
@@ -140,23 +146,23 @@ export default class MapView extends Vue {
     }
   };
 
-  mapPickUpDepartureData(): PickUpModel2[] {
+  mapPickUpDepartureData(): PickUpModel[] {
     return this.pickUpList
         ? this.pickUpList
             // Filter Response without coordinates properties and empty coordinates to avoid tomtom map crash with lng/lat props!
             // eslint-disable-next-line no-prototype-builtins
             .filter((element) =>  element.hasOwnProperty('departureCoordinates') && element.hasOwnProperty('arrivalCoordinates'))
             .filter((element) => element["departureCoordinates"].length > 0 && element["arrivalCoordinates"].length > 0)
-           /* .map((element: PickUpModel2) => {
+           /* .map((element: PickUpModel) => {
                 element.departureCoordinates = Object.assign([{ lng: element["departureCoordinates"][1], lat: element["departureCoordinates"][0] }])
                 element.arrivalCoordinates = Object.assign([{ lng: element["arrivalCoordinates"][1], lat: element["arrivalCoordinates"][0] }])*/
               //console.log('map', element)
           //return element;
         //})
-        : [] as PickUpModel2[];
+        : [] as PickUpModel[];
   }
 
-  async traceRoute(currentPickModel: PickUpModel2, index: any) {
+  async traceRoute(currentPickModel: PickUpModel, index: any) {
     await this.selectedCurrentPickUpModel(currentPickModel)
     this.makeRoute(index)
   }

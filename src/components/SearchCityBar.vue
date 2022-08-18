@@ -1,18 +1,7 @@
 <template>
-  <div class="q-pa-lg">
-    <div class="q-gutter-sm">
-      <!--      <QInput
-        v-model="departureCity"
-        label="Ville de départ"
-        :loading="isLoading"
-      />
-      <QInput
-        v-model="arrivalCity"
-        label="Ville de départ"
-        :loading="isLoading"
-      />-->
-      <div class="q-gutter-md row">
+      <div class="q-gutter-md">
         <QSelect
+          dense
           filled
           v-model="inputDepartureCity"
           use-input
@@ -21,12 +10,15 @@
           input-debounce="2"
           map-options
           emit-value
+          clearable
+          v-model:label="inputLabel"
           option-label="showCompletion"
           option-value="optionsAutoCompletion"
           :options="optionsAutoCompletion"
           @filter="autoCompletionCities"
-          @input-value="getSeletedCityFromAC"
-          hint="Minimum 2 characters to trigger filtering"
+          @input-value="getSelectedCityFromAC"
+          @update:model-value="getSelectedValue"
+          hint="Minimum 2 caractères pour chercher une ville"
           style="width: 100%; padding-bottom: 32px"
         >
           <template v-slot:prepend>
@@ -39,18 +31,6 @@
           </template>
         </QSelect>
       </div>
-      <QBtn
-        round
-        color="black"
-        icon="my_location"
-        @click="getInputDepartureCityCoordinates"
-        @keyup.enter="getInputDepartureCityCoordinates"
-      />
-      <q-badge color="secondary" multi-line>
-        Model: "{{ inputDepartureCity }}"
-      </q-badge>
-    </div>
-  </div>
 </template>
 
 <script lang="ts">
@@ -58,6 +38,7 @@ import { Options, Vue } from "vue-class-component";
 import { namespace } from "s-vuex-class";
 import { City, CityCompletion } from "@/models/City";
 import { CityCoordinatesService } from "@/services/z-index";
+import { Prop } from "vue-property-decorator";
 
 const cityCoordinatesMd = namespace("CityCoordinatesMd");
 
@@ -75,6 +56,9 @@ export default class SearchCityBar extends Vue {
 
   private isLoading = false;
   private timerAutoCompletion: ReturnType<typeof setTimeout> | null = null;
+
+  @Prop({ default: "Selectionnez une Ville pour Zoomer", type: String})
+  readonly inputLabel!: string;
 
   @cityCoordinatesMd.Getter
   private coordinatesCityMd!: City | null;
@@ -98,10 +82,10 @@ export default class SearchCityBar extends Vue {
     );
   }
 
-  async getSeletedCityFromAC(selectedCity: string) {
+  async getSelectedCityFromAC(selectedCity: string) {
     console.log("v model", this.inputDepartureCity);
     console.log("v model param", selectedCity);
-    await this.getInputDepartureCityCoordinates(this.inputDepartureCity)
+    await this.getInputDepartureCityCoordinates()
     //this.inputDepartureCity = selectedCity;
   }
 
@@ -123,9 +107,14 @@ export default class SearchCityBar extends Vue {
     }
   }
 
-  async getInputDepartureCityCoordinates(inputDepartureCity: CityCompletion | null): Promise<void> {
+  async getSelectedValue(val: string) {
+    await this.getInputDepartureCityCoordinates();
+  }
+
+  async getInputDepartureCityCoordinates(): Promise<void> {
     this.isLoading = true;
     try {
+      //inputDepartureCity: CityCompletion | null
       //const convertCityFromAc = this.inputDepartureCity.match(/([^- ])*$/g)?.[0] || null;
       console.log("here object", this.inputDepartureCity);
       //.log("here converted", convertCityFromAc);

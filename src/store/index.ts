@@ -3,6 +3,7 @@ import Vuex, { StoreOptions } from "vuex";
 import CityCoordinatesMd from "@/store/modules/CityCoordinatesMd";
 import PickUpMd from "@/store/modules/PickUpMd";
 import UserMd from "@/store/modules/UserMd";
+import DriverMd from "@/store/modules/DriverMd";
 
 /* eslint-disable @typescript-eslint/no-empty-interface */
 interface RootState {}
@@ -28,7 +29,8 @@ const storeOptions: StoreOptions<RootState> = {
   modules: {
     CityCoordinatesMd,
     PickUpMd,
-    UserMd
+    UserMd,
+    DriverMd,
   },
   plugins: [vuexLocal.plugin],
 };

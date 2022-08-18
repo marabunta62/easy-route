@@ -1,7 +1,8 @@
 <template>
-  <div class="home">
+  <div class="home q-mt-lg">
     <AccountCreateLogin/>
-    <SearchCityBar />
+    <SearchCityBar class="q-px-md"/>
+    <FilterCitiesOnMap />
     <MapView />
   </div>
 </template>
@@ -13,9 +14,11 @@ import MapView from "@/components/MapView.vue";
 
 import { Options, Vue } from "vue-class-component";
 import AccountCreateLogin from "@/components/AccountCreateLogin.vue";
+import FilterCitiesOnMap from "@/components/FilterCitiesOnMap.vue";
 
 @Options({
   components: {
+    FilterCitiesOnMap,
     MapView,
     SearchCityBar,
     AccountCreateLogin

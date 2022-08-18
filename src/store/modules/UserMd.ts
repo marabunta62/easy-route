@@ -1,7 +1,6 @@
 import { Action, Module, Mutation, VuexModule } from "vuex-module-decorators";
 import { UserAPiNest, UserModel } from "@/models/User";
 import { UserService } from "@/services/z-index";
-import { AxiosResponse } from "@/config/axios";
 
 @Module({
     namespaced: true,
