@@ -20,7 +20,7 @@ export class CityCoordinatesSvc {
   }
 
   async fetchCityAutoCompletionList(city: string | null): Promise<[] | null> {
-    //console.log("param svc ", city);
+    console.log("param svc ", city);
     const response: AxiosResponse = await axios.get("/location-map/ac", {
       params: {
         cityName: city,

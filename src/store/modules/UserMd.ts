@@ -65,10 +65,9 @@ export default class UserMd extends VuexModule {
     }
 
     @Action({ rawError: true })
-    disConnexionAction(value: boolean): void {
-        //this.openConnexionPopIn = true;
-        this.context.commit("isAuthenticatedUser", false);
-        this.context.commit("setUserAuthData", null);
+    async disConnexionAction(value: boolean): Promise<void> {
+        await this.context.commit("isAuthenticatedUser", false);
+        await this.context.commit("setUserAuthData", null);
     }
 
     @Action({ rawError: true })

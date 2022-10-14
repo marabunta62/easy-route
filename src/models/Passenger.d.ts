@@ -9,3 +9,10 @@ export interface Passenger {
     pickUp: PickUpModel;
     isRejected?: boolean;
 }
+
+
+export interface PassengerList {
+    userId: string;
+    name: string;
+    isRejected: boolean;
+}

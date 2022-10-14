@@ -1,6 +1,8 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router";
-import HomeView from "../views/HomeView.vue";
 import { isAllowedToAccess } from "@/config/guard";
+import { store } from "@/store";
+
+const isAuthenticated = store.getters['UserMd/isUserAuthenticated'];
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -24,12 +26,13 @@ const routes: Array<RouteRecordRaw> = [
     name: "userProfile",
     component: () =>
         import(/* webpackChunkName: "profile" */ "../views/UserProfile.vue"),
-    beforeEnter: (to, from, next) => {
-      if (isAllowedToAccess()) {
-        console.log("guard", isAllowedToAccess())
+    beforeEnter: async (to, from, next) => {
+      const canAccess = await isAuthenticated
+      if (canAccess) {
+        console.log("guard", canAccess)
         return next()
       } else {
-        next({ name: 'home'})
+        return next({ name: 'home'})
       }
     }
   },
@@ -38,9 +41,10 @@ const routes: Array<RouteRecordRaw> = [
     name: "userDriver",
     component: () =>
         import(/* webpackChunkName: "profile" */ "../views/DriverView.vue"),
-    beforeEnter: (to, from, next) => {
-      if (isAllowedToAccess()) {
-        console.log("guard", isAllowedToAccess())
+    beforeEnter: async (to, from, next) => {
+      const canAccess = await isAuthenticated
+      if (canAccess) {
+        console.log("guard", canAccess)
         return next()
       } else {
         next({ name: 'home'})
@@ -52,9 +56,10 @@ const routes: Array<RouteRecordRaw> = [
     name: "userPassengers",
     component: () =>
         import(/* webpackChunkName: "profile" */ "../views/PassengersView.vue"),
-    beforeEnter: (to, from, next) => {
-      if (isAllowedToAccess()) {
-        console.log("guard", isAllowedToAccess())
+    beforeEnter: async (to, from, next) => {
+      const canAccess = await isAuthenticated
+      if (canAccess) {
+        console.log("guard", isAuthenticated)
         return next()
       } else {
         next({ name: 'home'})

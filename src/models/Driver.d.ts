@@ -9,3 +9,9 @@ export interface Driver {
     passengersRequestForPickUp: Passenger[];
     passengers: Passenger[];
 }
+
+
+export interface HolidaysDates {
+    from: 'toto';
+    to: string;
+}

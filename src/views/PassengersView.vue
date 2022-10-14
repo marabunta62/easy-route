@@ -55,9 +55,13 @@
 <script lang="ts">
 
 import { Options, Vue } from "vue-class-component";
+import MapView from "@/components/MapView.vue";
 
 @Options({
-  name: 'UserPassengers'
+  name: 'UserPassengers',
+  components: {
+    MapView
+  }
 })
 export default class UserPassengers extends Vue {
 

@@ -1,7 +1,7 @@
 <template>
   <div class="home q-mt-lg">
     <AccountCreateLogin/>
-    <SearchCityBar class="q-px-md"/>
+    <SearchCityBar class="q-px-md" :icon="'location_searching'"/>
     <FilterCitiesOnMap />
     <MapView />
   </div>

@@ -2,15 +2,32 @@ import { Action, Module, Mutation, VuexModule } from "vuex-module-decorators";
 import { PickUpModel } from "@/models/PickUp";
 import { DriverService } from "@/services/z-index";
 import { convertProxyInJson } from "@/store";
+import { CityCompletion } from "@/models/City";
+import { Passenger, PassengerList } from "@/models/Passenger";
 
 @Module({
     namespaced: true,
 })
 export default class DriverMd extends VuexModule {
     private driverPickUp: PickUpModel | null = null;
+    private currentPassengers: PassengerList[] | null = null;
+    private cityDepartureCompletion: CityCompletion | null = null;
+    private cityArrivalCompletion: CityCompletion | null = null;
 
     get driverPickUpData(): PickUpModel | null {
         return convertProxyInJson(this.driverPickUp);
+    }
+
+    get driverCurrentPassengers(): PassengerList[] | null {
+        return convertProxyInJson(this.currentPassengers);
+    }
+
+    get driverCityArrivalCompletion(): CityCompletion | null {
+        return convertProxyInJson(this.cityArrivalCompletion);
+    }
+
+    get driverCityDepartureCompletion(): CityCompletion | null {
+        return convertProxyInJson(this.cityDepartureCompletion);
     }
 
     @Mutation
@@ -18,15 +35,61 @@ export default class DriverMd extends VuexModule {
         this.driverPickUp = driverPickUp;
     }
 
+    @Mutation
+    setDriverCurrentPassengers(driverPickUpPassenger: PassengerList[] | null): void {
+        this.currentPassengers = driverPickUpPassenger;
+    }
+
+    @Mutation
+    setDriverCityArrivalCompletion(cityCompletion: CityCompletion | null): void {
+        this.cityArrivalCompletion = cityCompletion;
+    }
+
+    @Mutation
+    setDriverCityDepartureCompletion(cityCompletion: CityCompletion | null): void {
+        this.cityDepartureCompletion = cityCompletion;
+    }
+
     @Action({ rawError: true })
     async fetchDriverPickUpData(userId: number): Promise<void> {
         try {
-            console.log("driver call params", userId)
             const driverPickUpResponse = await DriverService.getDriverPickUpData(userId);
-            console.log("driver  infos", driverPickUpResponse)
             this.context.commit("setDriverPickUpData", driverPickUpResponse);
+            const driverCityArrivalCompletion = {
+                city: '',
+                showCompletion: driverPickUpResponse.pickUp.arrivalCityName,
+                coordinates: driverPickUpResponse.pickUp.arrivalCoordinates,
+            };
+            const driverCityDepartureCompletion = {
+                city: '',
+                showCompletion: driverPickUpResponse.pickUp.departureCityName,
+                coordinates: driverPickUpResponse.pickUp.departureCityName,
+            };
+
+            const filteredPassengersList = driverPickUpResponse.passengers.filter((passengers) => {
+                return passengers.isRejected === false;
+            })
+
+            console.log("driver  infos", driverPickUpResponse)
+
+            this.context.commit("setDriverCityArrivalCompletion", driverCityArrivalCompletion);
+            this.context.commit("setDriverCityDepartureCompletion", driverCityDepartureCompletion);
+            this.context.commit("setDriverCurrentPassengers", filteredPassengersList);
         } catch (err) {
             this.context.commit("setDriverPickUpData", null);
+            throw err;
+        }
+    }
+
+    @Action({ rawError: true })
+    async postDriverInfosData(driverInfo: any): Promise<void> {
+        // eslint-disable-next-line no-useless-catch
+        try {
+            await DriverService.postDriverInfosPickUpData(driverInfo);
+            //console.log("driver  infos", userId)
+            //this.context.dispatch("fetchDriverPickUpData", userId);
+        } catch (err) {
+            //this.context.commit("setDriverPickUpData", null);
             throw err;
         }
     }

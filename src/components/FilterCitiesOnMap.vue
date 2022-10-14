@@ -1,7 +1,16 @@
 <template>
   <div class="row justify-around">
-    <search-city-bar :input-label="'Filtrer Ville Départ'"></search-city-bar>
-    <search-city-bar :input-label="'Filtrer Ville Arrivé'"></search-city-bar>
+    <search-city-bar
+        :input-label="'Filtrer Ville Départ'"
+        :icon="'pin_drop'"
+        :filled="true"
+    ></search-city-bar>
+    <search-city-bar
+        :input-label="'Filtrer Ville Arrivé'"
+        :icon="'where_to_vote'"
+        :dense="true"
+        :filled="true"
+    ></search-city-bar>
     <label class="q-ma-xs filter__label">
       <q-checkbox v-model="isSlotAvailable"></q-checkbox>
       Afficher uniquement les trajets avec des places disponibles

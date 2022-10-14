@@ -1,9 +1,12 @@
 <template>
       <div class="q-gutter-md">
         <QSelect
-          dense
-          filled
-          v-model="inputDepartureCity"
+          :dense="dense"
+          :filled="filled"
+          :square="square"
+          :outlined="outlined"
+          :bottom-slots="bottomSlots"
+          v-model="inputWriteCity2"
           use-input
           hide-selected
           fill-input
@@ -11,6 +14,7 @@
           map-options
           emit-value
           clearable
+          @clear="clearInput"
           v-model:label="inputLabel"
           option-label="showCompletion"
           option-value="optionsAutoCompletion"
@@ -22,7 +26,7 @@
           style="width: 100%; padding-bottom: 32px"
         >
           <template v-slot:prepend>
-            <QIcon name="place" />
+            <QIcon :name="icon" />
           </template>
           <template v-slot:no-option>
             <QItem>
@@ -38,7 +42,7 @@ import { Options, Vue } from "vue-class-component";
 import { namespace } from "s-vuex-class";
 import { City, CityCompletion } from "@/models/City";
 import { CityCoordinatesService } from "@/services/z-index";
-import { Prop } from "vue-property-decorator";
+import { ModelSync, Prop, PropSync } from "vue-property-decorator";
 
 const cityCoordinatesMd = namespace("CityCoordinatesMd");
 
@@ -46,48 +50,88 @@ const cityCoordinatesMd = namespace("CityCoordinatesMd");
   name: "SearchCityBar",
 })
 export default class SearchCityBar extends Vue {
-  private inputDepartureCity: CityCompletion | null = null;
-  private departureCity = "";
 
-  private inputArrivalCity = "";
-  private arrivalCity = "";
+  private inputWriteCity: CityCompletion | null = null;
+  private inputWriteCity2 = '';
 
   private citiesList: any = null;
 
   private isLoading = false;
-  private timerAutoCompletion: ReturnType<typeof setTimeout> | null = null;
 
   @Prop({ default: "Selectionnez une Ville pour Zoomer", type: String})
   readonly inputLabel!: string;
+
+  @Prop({ default: "pin_drop", type: String})
+  readonly icon!: string;
+
+  @Prop({ default: true, type: Boolean})
+  readonly flate!: boolean;
+
+  @Prop({ default: false, type: Boolean})
+  readonly square!: boolean;
+
+  @Prop({ default: true, type: Boolean})
+  readonly outlined!: boolean;
+
+  @Prop({ default: true, type: Boolean})
+  readonly dense!: boolean;
+
+  @Prop({ default: false, type: Boolean})
+  readonly bottomSlots!: boolean;
+
+  @Prop({ default: false, type: Boolean})
+  readonly filled!: boolean;
+
+  @PropSync('cityNameInput')
+  inputCity!: CityCompletion;
 
   @cityCoordinatesMd.Getter
   private coordinatesCityMd!: City | null;
 
   @cityCoordinatesMd.Action
-  private fetchCityCoordinates!: (inputDepartureCity: CityCompletion | null) => Promise<void>;
+  private fetchCityCoordinates!: (inputDepartureCity: string | null) => Promise<void>;
 
-  /*mounted() {
-    this.inputCity();
-  }*/
+  //private departureCityName!: CityCompletion;
+
+  created() {
+    if(this.inputCity) {
+      console.log('enter in condition')
+      console.log('enter in condition infos', this.inputCity)
+      this.inputWriteCity2 = this.inputCity.showCompletion;
+    }
+  }
+
+  clearInput() {
+    console.log('clear')
+    this.inputCity.showCompletion = '';
+  }
+
+  /*
+  * Selected Value in AutoCompletion should update coordinates module
+  */
+  async getSelectedCityFromAC() {
+    await this.getInputDepartureCityCoordinates()
+  }
+
+  /*
+  * Selected Value should update input model and update coordinates module
+  */
+  async getSelectedValue() {
+    await this.getInputDepartureCityCoordinates();
+  }
+
   get optionsAutoCompletion(): [] {
     if (this.citiesList === null) {
       return [];
     }
     return this.citiesList.map((element: any) =>
-      Object.assign({
-        city: element["city"],
-        showCompletion: element["country"] + " - " + element["city"],
-        coordinates: element["coordinates"],
-      })
+        Object.assign({
+          city: element["city"],
+          showCompletion: element["country"] + " - " + element["city"],
+          coordinates: element["coordinates"],
+        })
     );
-  }
-
-  async getSelectedCityFromAC(selectedCity: string) {
-    console.log("v model", this.inputDepartureCity);
-    console.log("v model param", selectedCity);
-    await this.getInputDepartureCityCoordinates()
-    //this.inputDepartureCity = selectedCity;
-  }
+  };
 
   async autoCompletionCities(cityInput: string | null, update: (arg0: () => void) => void, abort: () => void): Promise<void> {
     if (cityInput != null && cityInput.length >= 3) {
@@ -107,24 +151,20 @@ export default class SearchCityBar extends Vue {
     }
   }
 
-  async getSelectedValue(val: string) {
-    await this.getInputDepartureCityCoordinates();
-  }
-
   async getInputDepartureCityCoordinates(): Promise<void> {
     this.isLoading = true;
     try {
-      //inputDepartureCity: CityCompletion | null
-      //const convertCityFromAc = this.inputDepartureCity.match(/([^- ])*$/g)?.[0] || null;
-      console.log("here object", this.inputDepartureCity);
-      //.log("here converted", convertCityFromAc);
-      //send coordinates into store for map component
-      await this.fetchCityCoordinates(this.inputDepartureCity);
+      /*
+      * Selected Value should update coordinates module for mapView Component
+      */
+      await this.fetchCityCoordinates(this.inputWriteCity2);
       this.isLoading = false;
     } catch (err) {
       this.$log.error(err);
     } finally {
       this.isLoading = false;
+      this.$emit('update-city', this.inputWriteCity2)
+
     }
   }
 }

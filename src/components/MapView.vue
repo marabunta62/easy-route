@@ -10,7 +10,7 @@
 import { Options, Vue } from "vue-class-component";
 import tt, { LngLatLike } from "@tomtom-international/web-sdk-maps";
 import tts from "@tomtom-international/web-sdk-services";
-import { Inject, Watch } from "vue-property-decorator";
+import { Inject, Prop, Watch } from "vue-property-decorator";
 import { namespace } from "s-vuex-class";
 import { CityCompletion } from "@/models/City";
 import { PickUpModel } from "@/models/PickUp";
@@ -45,6 +45,12 @@ export default class MapView extends Vue {
   @Inject("TOM_TOM_API_KEY")
   private tomTomAPiKey!: string;
 
+  @Prop({ default: ['', ''], type: [] })
+  readonly arrivalCoordinates!: [];
+
+  @Prop({ default: ['', ''], type: [] })
+  readonly departureCoordinates!: [];
+
   public window: any = window.tt;
   public map: any;
   public marker: any = new this.window.Marker();
@@ -52,7 +58,7 @@ export default class MapView extends Vue {
 
   mounted() {
     this.initMap();
-    this.addMarkers();
+    this.$route.name === 'home' ? this.addMarkers() : this.addDriverViewMarkers();
   }
 
   initMap(): any {
@@ -69,6 +75,7 @@ export default class MapView extends Vue {
   }
 
   addMarker(): any | null {
+    //1st instance probleme undefined reading at il a pas coordinatesCityMd?.coordinates trop tôt
     const newLocation = {
       lng: this.coordinatesCityMd?.coordinates.at(0),
       lat: this.coordinatesCityMd?.coordinates.at(1),
@@ -146,6 +153,33 @@ export default class MapView extends Vue {
     }
   };
 
+
+  addDriverViewMarkers() {
+    let departureMarkersDiv = document.createElement('div');
+    departureMarkersDiv.className = 'departureMarkers';
+    let arrivalMarkersDiv = document.createElement('div');
+    arrivalMarkersDiv.className = 'arrivalMarkers';
+
+    console.log('coordiantes', this.arrivalCoordinates)
+
+    const departureCoordinates = this.departureCoordinates;
+    const arrivalsCoordinates = this.arrivalCoordinates;
+
+    new this.window.Marker({element: departureMarkersDiv, anchor: 'center'})
+        .setLngLat(departureCoordinates)
+        .addTo(this.map)
+        .getElement().addEventListener('click', () => {
+              if(typeof this.routeId !== "undefined") {
+                this.clearRoute(this.routeId)
+              }
+              this.makeRoute(1)
+    })
+
+    new this.window.Marker({element: arrivalMarkersDiv, anchor: 'center'})
+        .setLngLat(arrivalsCoordinates)
+        .addTo(this.map)
+  }
+
   mapPickUpDepartureData(): PickUpModel[] {
     return this.pickUpList
         ? this.pickUpList
@@ -187,16 +221,21 @@ export default class MapView extends Vue {
   }
 
   makeRoute(index: any) {
+    //Perhaps should be Reactor later
+    const coordinates = this.$route.name === 'home' ?
+        this.selectedPickUp?.departureCoordinates.toString() + ':' + this.selectedPickUp?.arrivalCoordinates.toString() :
+        this.departureCoordinates.toString() + ':' + this.arrivalCoordinates.toString();
+
     const routeBackgroundWeight = 5
-    tts.services.calculateRoute({
-      key: this.tomTomAPiKey,
-      locations: this.selectedPickUp?.departureCoordinates.toString() + ':' + this.selectedPickUp?.arrivalCoordinates.toString(),
-      travelMode: 'car',
-    }).then(routeData => {
-      const routeGeoJson = routeData.toGeoJson()
-      this.routeId = 'route_background_' + index;
-      this.map.addLayer(this.buildStyle(this.routeId, routeGeoJson, 'black', routeBackgroundWeight))
-    })
+      tts.services.calculateRoute({
+          key: this.tomTomAPiKey,
+          locations: coordinates,
+          travelMode: 'car',
+      }).then(routeData => {
+          const routeGeoJson = routeData.toGeoJson()
+          this.routeId = 'route_background_' + index;
+          this.map.addLayer(this.buildStyle(this.routeId, routeGeoJson, 'black', routeBackgroundWeight))
+      })
   }
 
   clearRoute(route: any) {

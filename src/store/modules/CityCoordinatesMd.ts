@@ -1,28 +1,25 @@
 import { Action, Module, Mutation, VuexModule } from "vuex-module-decorators";
 import { CityCompletion } from "@/models/City";
+import { convertProxyInJson } from "@/store";
 
 @Module({
   namespaced: true,
 })
 export default class CityCoordinatesMd extends VuexModule {
-  private coordinatesCity: CityCompletion | null = null;
+  private coordinatesCity: string | null = null;
 
-  get coordinatesCityMd(): CityCompletion | null {
-    return this.coordinatesCity;
+  get coordinatesCityMd(): string | null {
+    return convertProxyInJson(this.coordinatesCity);
   }
 
   @Mutation
-  setCoordinatesCity(coordinatesCity: CityCompletion | null): void {
+  setCoordinatesCity(coordinatesCity: string | null): void {
     this.coordinatesCity = coordinatesCity;
   }
 
   @Action({ rawError: true })
-  async fetchCityCoordinates(cityName: CityCompletion): Promise<void> {
+  async fetchCityCoordinates(cityName: string): Promise<void> {
     try {
-      //const setCoordinatesCityData =
-        //await CityCoordinatesService.getCityCoordinates(cityName);
-      console.log("new location", cityName)
-
       this.context.commit("setCoordinatesCity", cityName);
     } catch (err) {
       this.context.commit("setCoordinatesCity", null);

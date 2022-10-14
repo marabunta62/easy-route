@@ -15,6 +15,7 @@
     "core-js": "^3.8.3",
     "eslint": "^8.14.0",
     "eslint-plugin-promise": "^6.0.0",
+    "moment": "^2.29.4",
     "quasar": "^2.0.0",
     "s-vuex-class": "^0.4.1",
     "typescript": "^4.6.3",
