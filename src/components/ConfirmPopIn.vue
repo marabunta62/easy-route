@@ -34,20 +34,26 @@ export default class ConfirmPopIn extends Vue {
   @Prop({ default: false, type: Boolean})
   readonly loadingAction!: boolean;
 
-  @popInMd.Getter
-  private popInState!: boolean;
+  //@popInMd.Getter
+  @Prop({ default: false, type: Boolean})
+  private popInState!: false;
 
-  @popInMd.Action
-  private popInChangeState!: (popInState: boolean) => void;
+
+ /* @popInMd.Action
+  private popInChangeState!: (popInState: boolean) => void;*/
 
   executeConfirm() {
     //this.executeConfirmPop(this.actionToDo);
+    //this.popInState = false;
     this.$emit('confirm');
-    this.popInChangeState(false);
+    //this.popInChangeState(false);
   }
 
   closePopIn() {
-    this.popInChangeState(false);
+    //this.popInState = false;
+    this.$emit('exit');
+
+    //this.popInChangeState(false);
   }
 }
 </script>

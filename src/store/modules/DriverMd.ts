@@ -11,6 +11,7 @@ import { Passenger, PassengerList } from "@/models/Passenger";
 export default class DriverMd extends VuexModule {
     private driverPickUp: PickUpModel | null = null;
     private currentPassengers: PassengerList[] | null = null;
+    private currentRequestPassengers: PassengerList[] | null = null;
     private cityDepartureCompletion: CityCompletion | null = null;
     private cityArrivalCompletion: CityCompletion | null = null;
 
@@ -20,6 +21,10 @@ export default class DriverMd extends VuexModule {
 
     get driverCurrentPassengers(): PassengerList[] | null {
         return convertProxyInJson(this.currentPassengers);
+    }
+
+    get driverRequestCurrentPassengers(): PassengerList[] | null {
+        return convertProxyInJson(this.currentRequestPassengers);
     }
 
     get driverCityArrivalCompletion(): CityCompletion | null {
@@ -38,6 +43,11 @@ export default class DriverMd extends VuexModule {
     @Mutation
     setDriverCurrentPassengers(driverPickUpPassenger: PassengerList[] | null): void {
         this.currentPassengers = driverPickUpPassenger;
+    }
+
+    @Mutation
+    setDriverRequestCurrentPassengers(driverPickUpCurrentPassenger: PassengerList[] | null): void {
+        this.currentRequestPassengers = driverPickUpCurrentPassenger;
     }
 
     @Mutation
@@ -66,15 +76,12 @@ export default class DriverMd extends VuexModule {
                 coordinates: driverPickUpResponse.pickUp.departureCityName,
             };
 
-            const filteredPassengersList = driverPickUpResponse.passengers.filter((passengers) => {
-                return passengers.isRejected === false;
-            })
-
             console.log("driver  infos", driverPickUpResponse)
 
             this.context.commit("setDriverCityArrivalCompletion", driverCityArrivalCompletion);
             this.context.commit("setDriverCityDepartureCompletion", driverCityDepartureCompletion);
-            this.context.commit("setDriverCurrentPassengers", filteredPassengersList);
+            this.context.commit("setDriverCurrentPassengers", driverPickUpResponse.passengers);
+            this.context.commit("setDriverRequestCurrentPassengers", driverPickUpResponse.passengersRequestForPickUps);
         } catch (err) {
             this.context.commit("setDriverPickUpData", null);
             throw err;
@@ -93,4 +100,5 @@ export default class DriverMd extends VuexModule {
             throw err;
         }
     }
+
 }

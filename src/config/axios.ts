@@ -16,6 +16,7 @@ instance.interceptors.response.use(undefined, (error: AxiosError) => {
   if (!error?.message) {
     errorMessage;
   } else {
+    console.log("interceptor", errorMessage)
     errorMessage = error?.response?.data.message || errorMessage;
   }
   throw new Error(errorMessage);

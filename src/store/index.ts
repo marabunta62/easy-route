@@ -5,6 +5,7 @@ import PickUpMd from "@/store/modules/PickUpMd";
 import UserMd from "@/store/modules/UserMd";
 import DriverMd from "@/store/modules/DriverMd";
 import PopInMd from "@/store/modules/PopInMd";
+import PassengerMd from "@/store/modules/PassengerMd";
 
 /* eslint-disable @typescript-eslint/no-empty-interface */
 interface RootState {}
@@ -32,7 +33,8 @@ const storeOptions: StoreOptions<RootState> = {
     PickUpMd,
     UserMd,
     DriverMd,
-    PopInMd
+    PopInMd,
+    PassengerMd
   },
   plugins: [vuexLocal.plugin],
 };

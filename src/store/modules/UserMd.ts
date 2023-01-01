@@ -1,5 +1,5 @@
 import { Action, Module, Mutation, VuexModule } from "vuex-module-decorators";
-import { UserAPiNest, UserModel } from "@/models/User";
+import { UpdateUserData, UserAPiNest, UserModel } from "@/models/User";
 import { UserService } from "@/services/z-index";
 
 @Module({
@@ -12,6 +12,7 @@ export default class UserMd extends VuexModule {
     private userApiNest: UserAPiNest | null = null;
     private token: string | null = null;
     private message: UserAPiNest | null = null;
+    private userProfile: UpdateUserData | null = null;
 
     get connexionPopIn(): boolean {
         return this.openConnexionPopIn;
@@ -31,6 +32,10 @@ export default class UserMd extends VuexModule {
 
     get messageApi(): UserAPiNest | null {
         return this.message;
+    }
+
+    get userProfileData(): UpdateUserData | null {
+        return this.userProfile;
     }
 
     @Mutation
@@ -58,6 +63,11 @@ export default class UserMd extends VuexModule {
         this.message = message;
     }
 
+    @Mutation
+    setUserProfileData(userData: UpdateUserData | null): void {
+        this.userProfile = userData;
+    }
+
     @Action({ rawError: true })
     connexionPopInAction(value: boolean): void {
         //this.openConnexionPopIn = true;
@@ -66,7 +76,7 @@ export default class UserMd extends VuexModule {
 
     @Action({ rawError: true })
     async disConnexionAction(value: boolean): Promise<void> {
-        await this.context.commit("isAuthenticatedUser", false);
+        await this.context.commit("isAuthenticatedUser", value);
         await this.context.commit("setUserAuthData", null);
     }
 
@@ -88,6 +98,38 @@ export default class UserMd extends VuexModule {
             this.context.commit("setUserAuthData", null);
             this.context.commit("isAuthenticatedUser", false);
             throw err;
+        }
+    }
+
+    @Action({ rawError: true })
+    async fetchUserProfileData(id: number): Promise<void> {
+        // eslint-disable-next-line no-useless-catch
+        try {
+            const userProfileData = await UserService.getUserPrivateProfile(id);
+            //console.log('userProfileData', userProfileData)
+
+            this.context.commit("setUserProfileData", userProfileData);
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    @Action({ rawError: true })
+    async patchUserProfileData(updateUser: UpdateUserData): Promise<void> {
+        // eslint-disable-next-line no-useless-catch
+        //filter empty fields
+        const filterObject = Object.entries(updateUser)
+            .filter(([_, v]) => v || typeof v === 'boolean')
+            .reduce((acc, [k, v]) => ({...acc, [k]: v}), {});
+
+        //console.log('svc send what', updateUser);
+        const userProfileData = await UserService.patchUserPrivateProfile(filterObject);
+        this.context.commit("setUserProfileData", userProfileData);
+        this.context.commit("setMessage", null);
+
+        console.log("module", userProfileData)
+        if (userProfileData instanceof Error) {
+            this.context.commit("setMessage", userProfileData.message);
         }
     }
 }

@@ -135,7 +135,7 @@ export default class SearchCityBar extends Vue {
 
   async autoCompletionCities(cityInput: string | null, update: (arg0: () => void) => void, abort: () => void): Promise<void> {
     if (cityInput != null && cityInput.length >= 3) {
-      //LOwerCase city INput
+      //LowerCase city Input break case sensitive
       try {
         setTimeout(async () => {
           const response = await CityCoordinatesService.fetchCityAutoCompletionList(cityInput);

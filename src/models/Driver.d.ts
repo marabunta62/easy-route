@@ -6,7 +6,9 @@ import { UserModel } from "@/models/User";
 export interface Driver {
     id: number;
     pickUp: PickUpModel;
-    passengersRequestForPickUp: Passenger[];
+    name?: string;
+    userId?: string;
+    passengersRequestForPickUps: Passenger[];
     passengers: Passenger[];
 }
 

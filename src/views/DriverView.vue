@@ -51,7 +51,22 @@
       </div>
         <confirm-pop-in
             :label-pop="` Etes-vous certain de vouloir retirer ${passengerName} de vos passagers ?`"
+            :pop-in-state="popInStatePassenger"
+            :loading-action="loading"
             @confirm="confirmDeletePassenger()"
+            @exit="exitPopIn"
+        ></confirm-pop-in>
+        <confirm-pop-in
+            :label-pop="` Etes-vous certain de vouloir rejeter ${passengerName} de vos demandes de passengers ?`"
+            :pop-in-state="popInStateRejectPassenger"
+            @confirm="confirmDeletePassenger()"
+            @exit="exitPopIn"
+        ></confirm-pop-in>
+        <confirm-pop-in
+            :label-pop="` Etes-vous certain de vouloir ajouter ${passengerName} à la liste de vos passagers ?`"
+            :pop-in-state="popInStateAcceptPassenger"
+            @confirm="confirmAcceptPassenger()"
+            @exit="exitPopIn"
         ></confirm-pop-in>
       </div>
     <div class="col-md-6 col-xs-12 q-pa-sm">
@@ -261,7 +276,9 @@
               </div>
               <confirm-pop-in
                 :label-pop="' Mettre à jour vos informations de trajet ?'"
+                :pop-in-state="popInStateConfirmUpdateInfos"
                 @confirm="confirmUpdateDriverInfos"
+                @exit="exitPopIn"
               ></confirm-pop-in>
 
         </q-list>
@@ -270,7 +287,7 @@
       <div class="row q-pa-sm col-12 q-pa-sm">
         <q-table style="width: 100%"
                  title="Liste de demandes de passagers"
-                 :rows="passengerRequestTableData"
+                 :rows="driverRequestCurrentPassengers"
                  :columns="passengerRequestColmuns"
                  row-key="name"
         >
@@ -288,22 +305,22 @@
           </template>
           <template v-slot:body-cell-profile="props">
             <q-td :props="props">
-              <q-btn icon="account_box" color="purple" @click="onEdit(props.row)"></q-btn>
+              <q-btn icon="account_box" color="purple" @click="goToProfile(props)"></q-btn>
             </q-td>
           </template>
           <template v-slot:body-cell-messenger="props">
             <q-td :props="props">
-              <q-btn icon="chat" color="blue" @click="onEdit(props.row)"></q-btn>
+              <q-btn icon="chat" color="blue" @click="goToTchat(props)"></q-btn>
             </q-td>
           </template>
           <template v-slot:body-cell-accept="props">
             <q-td :props="props">
-              <q-btn icon="check_circle" color="green" @click="onEdit(props.row)"></q-btn>
+              <q-btn icon="check_circle" color="green" @click="acceptPassenger(props)"></q-btn>
             </q-td>
           </template>
           <template v-slot:body-cell-cancel="props">
             <q-td :props="props">
-              <q-btn icon="cancel" color="red" @click="onEdit(props.row)"></q-btn>
+              <q-btn icon="cancel" color="red" @click="rejectPassenger(props)"></q-btn>
             </q-td>
           </template>
         </q-table>
@@ -326,11 +343,13 @@ import moment from "moment";
 import { CityCompletion } from "@/models/City";
 import { convertProxyInJson } from "@/store";
 import { Model } from "vue-property-decorator";
-import { Passenger, PassengerList } from "@/models/Passenger";
+import { Passenger, PassengerList, UpdateAcceptPassenger, UpdatePassenger } from "@/models/Passenger";
 
 const userMd = namespace("UserMd");
 const driverMd = namespace("DriverMd");
+//Probleme POP 2 cases s'ouvre scinder le use case
 const popInMd = namespace("PopInMd");
+const passengerMd = namespace("PassengerMd");
 
 @Options({
   name: 'UserDriver',
@@ -357,14 +376,23 @@ export default class UserDriver extends Vue {
   @driverMd.Getter
   private driverCurrentPassengers!: PassengerList[];
 
+  @driverMd.Getter
+  private driverRequestCurrentPassengers!: PassengerList[];
+
+  @passengerMd.Getter
+  private passengerIds!: number;
+
   @driverMd.Action
   private fetchDriverPickUpData!: (userId: number) => Promise<void>;
 
-  @popInMd.Action
-  private popInChangeState!: (popInState: boolean) => Promise<void>;
-
   @driverMd.Action
   private postDriverInfosData!: (driverPickInfos: any ) => Promise<void>;
+
+  @passengerMd.Action
+  private patchPassengerDriver!: (passengerUpdte: UpdatePassenger) => Promise<void>;
+
+  @passengerMd.Action
+  private passengerIdUpdate!: (passengerId: number) => Promise<void>;
 
   /*
   *  Come from SearchCityInput Event for update Driver PickUp
@@ -387,6 +415,7 @@ export default class UserDriver extends Vue {
   private totalSlots = 0;
   private takenSlots = 0;
   private availableSlots = 1;
+  private carSlots = [0, 1, 2, 3, 4, 5, 6];
 
   private wantPassengers = true;
  /* private departuresCoordinates!: Coordinates[];
@@ -394,17 +423,22 @@ export default class UserDriver extends Vue {
 
   private tableData!: Passenger[];
   private passengerName = '';
+  private userId = '';
   private passengerId = '';
 
   private loading = false;
+  private popInStateConfirmUpdateInfos = false;
+  private popInStatePassenger = false;
+  private popInStateAcceptPassenger = false;
+  private popInStateRejectPassenger = false;
 
   created() {
     this.driverInfosAndPickUpData();
 
     setTimeout(() => {
       /*
-   * Manage initial Travel properties values
-   */
+      * Manage initial Travel properties values
+      */
       //this.driverPickUpData.pickUp.departureCityName ? this.departureCityName = this.driverPickUpData.pickUp.departureCityName : '';
       //this.driverPickUpData.pickUp.arrivalCityName ? this.arrivalCityName = this.driverPickUpData.pickUp.arrivalCityName : '';
       this.driverPickUpData.pickUp.departureHour ? this.departureHour = this.driverPickUpData.pickUp.departureHour : '';
@@ -452,7 +486,6 @@ export default class UserDriver extends Vue {
     try {
       await this.fetchDriverPickUpData(this.userAuthData.userId);
       if(this.driverPickUpData.passengers) {
-        console.log('toto', this.driverPickUpData.passengers)
         this.tableData = this.driverPickUpData?.passengers;
       };
       console.log('usefull', this.driverPickUpData);
@@ -462,7 +495,14 @@ export default class UserDriver extends Vue {
   }
 
   openConfirmPopIn() {
-    this.popInChangeState(true);
+    this.popInStateConfirmUpdateInfos = true;
+  }
+
+  exitPopIn() {
+    this.popInStateConfirmUpdateInfos = false;
+    this.popInStatePassenger = false;
+    this.popInStateAcceptPassenger = false;
+    this.popInStateRejectPassenger = false;
   }
 
   async departureCityEE(value: CityCompletion) {
@@ -502,13 +542,12 @@ export default class UserDriver extends Vue {
       departureCoordinates: this.departuresCoordinatesEE,
       arrivalCoordinates: this.arrivalCoordinatesEE,
       pickUpCar: carUpdate,
-      passengers: [],
     }
     const updateDriver = {
       id: this.driverPickUpData.id,
       pickUp: pickUpUpdate,
       passengersRequestForPickUp: [],
-      passengers: [],
+      passengers: this.driverCurrentPassengers,
     }
     try {
       await this.postDriverInfosData(updateDriver);
@@ -517,66 +556,84 @@ export default class UserDriver extends Vue {
       this.$log.error(err);
     } finally {
       this.loading = false;
+      this.popInStateConfirmUpdateInfos = false;
     }
   }
 
-
   /*
-  *  Look for 1st instance of map component because didn't find map id and crash driver page 1st instance
+  *  Look up for 1st instance of map component because didn't find map id and crash driver page 1st instance
   */
 
   async dropPassenger($props: any) {
-    await console.log('click info row', $props)
-    await this.popInChangeState(true);
+    this.popInStatePassenger = true;
     this.passengerName = $props.row.name;
-    this.passengerId = $props.row.id;
-    //await console.log('click info row', row)
+    this.passengerId = $props.row.passengerId;
+  }
+
+  async rejectPassenger($props: any) {
+    this.popInStateRejectPassenger = true;
+    this.passengerName = $props.row.name;
+    this.passengerId = $props.row.passengerId;
+  }
+
+  async acceptPassenger($props: any) {
+    this.popInStateAcceptPassenger = true;
+    this.passengerName = $props.row.name;
+    this.passengerId = $props.row.passengerId;
   }
 
   async confirmDeletePassenger(): Promise<void> {
-    await console.log('send update isRejected to back at true', this.passengerId)
+    const passengerIsRejected = {
+      id: this.passengerId,
+      isRejected: true,
+      pickUp: null,
+      requestPickUp: null,
+    } as UpdatePassenger;
+    try {
+      await this.patchPassengerDriver(passengerIsRejected);
+      await this.fetchDriverPickUpData(this.userAuthData.userId);
+    } catch (err) {
+      this.$log.error(err);
+    } finally {
+      this.popInStatePassenger = false;
+      this.popInStateRejectPassenger = false;
+    }
   }
+
+  async confirmAcceptPassenger(): Promise<void> {
+    const passengerIsAccepted = {
+      id: this.passengerId,
+      isRejected: false,
+      pickUp: this.driverPickUpData.pickUp.id,
+      requestPickUp: null
+    } as unknown as UpdatePassenger;
+    try {
+      console.log('passenger accept', passengerIsAccepted)
+      await this.patchPassengerDriver(passengerIsAccepted);
+      await this.fetchDriverPickUpData(this.userAuthData.userId);
+    } catch (err) {
+      this.$log.error(err);
+    } finally {
+      this.popInStateAcceptPassenger = false;
+    }
+  };
 
   async goToTchat($props: any) {
-    await console.log('click info row', $props)
-    //await console.log('click info row', row)
-  }
+    this.userId = $props.row.userId;
+    await this.$router.push({ name: 'messengerView', params: { id: this.userId } });
+  };
 
   async goToProfile($props: any) {
-    await console.log('click info row', $props)
-    //await console.log('click info row', row)
-  }
+    this.userId = $props.row.userId;
+    await this.$router.push({ name: 'publicUserProfile', params: { id: this.userId } });
+  };
 
   private currentPassengers = [
     { name: 'name', label: 'Nom', field: 'name', sortable: true , align: 'center'},
     { name: 'profile', label: 'Profil', field: 'id', sortable: true, align: 'center' },
     { name: 'messenger', label: 'Messagerie', field: 'id', sortable: true, align: 'center' },
     { name: 'cancel', label: 'Rejeter passager', field: 'id', sortable: true, align: 'center' },
-  ]
-
-  //a lissu de la requête driver, tu as passengers avec leurs id, il faut requeter en plus la table user avec le passengerId pour get leurs names
-  //rejeter le passager = update du driver sur pickup/passengers/id?isrejected=true
-  //profile et messagerie avec passengerId
-  /*private tableData = [
-    {
-      name: 'josiane',
-      departure: 'Arras à 7h35',
-      destination: 'Lens à 8h',
-      slotsAvailable: '2'
-    },
-    {
-      name: 'juliette',
-      departure: 'Lens à 6h30',
-      destination: 'Lille à 7h30',
-      slotsAvailable: '1'
-    },
-    {
-      name: 'sé pa konduir',
-      departure: 'Lille à 8h',
-      destination: 'Vendin-le-Vieil à 8h20',
-      slotsAvailable: '4'
-    },
-  ]*/
+  ];
 
   private passengerRequestColmuns = [
     { name: 'name', label: 'Nom', field: 'name', sortable: true , align: 'center'},
@@ -585,36 +642,7 @@ export default class UserDriver extends Vue {
     { name: 'messenger', label: 'Messagerie', field: 'messenger', sortable: true, align: 'center' },
     { name: 'accept', label: 'Accepter passager', field: 'accept', sortable: true, align: 'center' },
     { name: 'cancel', label: 'Rejeter passager', field: 'reject', sortable: true, align: 'center' },
-  ]
-  private passengerRequestTableData = [
-    {
-      name: 'josiane',
-      date: '15/08/2022',
-      departure: 'Arras à 7h35',
-      destination: 'Lens à 8h',
-      slotsAvailable: '2'
-    },
-    {
-      name: 'juliette',
-      date: '07/08/2022',
-      departure: 'Lens à 6h30',
-      destination: 'Lille à 7h30',
-      slotsAvailable: '1'
-    },
-    {
-      name: 'sé pa konduir',
-      date: '06/07/2022',
-      departure: 'Lille à 8h',
-      destination: 'Vendin-le-Vieil à 8h20',
-      slotsAvailable: '4'
-    },
-  ]
-
-  private carSlots = [0, 1, 2, 3, 4, 5, 6];
-
-  //1 appel ou 2
-    //1 -> UserInfos avec trajets -> si coordinates => pass props to mapView sinon
-    //2 -> une fois recu userInfos trajet => appel cityCoordinates
+  ];
 }
 </script>
 <style lang="scss">

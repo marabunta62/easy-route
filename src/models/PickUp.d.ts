@@ -11,6 +11,7 @@ export interface PickUpModel {
   id: string;
   driver?: Driver;
   //driverName: string;
+  driverCurr?: Driver;
   departureCityName: string;
   arrivalCityName: string;
   departureHour?: string;

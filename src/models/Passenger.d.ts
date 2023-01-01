@@ -16,3 +16,22 @@ export interface PassengerList {
     name: string;
     isRejected: boolean;
 }
+
+export interface UpdatePassenger {
+    id: string;
+    isRejected: boolean;
+    pickUp: null;
+    requestPickUp?: null
+}
+
+export interface UpdateAcceptPassenger {
+    id: string;
+    isRejected: boolean;
+    requestPickUpId: null
+}
+
+export interface passengerIsUser {
+    findPassengerUser: UserModel,
+    currPickUp?: PickUpModel,
+    reqPickUp?: PickUpModel[]
+}

@@ -26,7 +26,7 @@ const routes: Array<RouteRecordRaw> = [
     name: "userProfile",
     component: () =>
         import(/* webpackChunkName: "profile" */ "../views/UserProfile.vue"),
-    beforeEnter: async (to, from, next) => {
+ /*   beforeEnter: async (to, from, next) => {
       const canAccess = await isAuthenticated
       if (canAccess) {
         console.log("guard", canAccess)
@@ -34,14 +34,14 @@ const routes: Array<RouteRecordRaw> = [
       } else {
         return next({ name: 'home'})
       }
-    }
+    }*/
   },
   {
     path: "/driver",
     name: "userDriver",
     component: () =>
         import(/* webpackChunkName: "profile" */ "../views/DriverView.vue"),
-    beforeEnter: async (to, from, next) => {
+  /*  beforeEnter: async (to, from, next) => {
       const canAccess = await isAuthenticated
       if (canAccess) {
         console.log("guard", canAccess)
@@ -49,14 +49,14 @@ const routes: Array<RouteRecordRaw> = [
       } else {
         next({ name: 'home'})
       }
-    }
+    }*/
   },
   {
     path: "/passenger",
     name: "userPassengers",
     component: () =>
         import(/* webpackChunkName: "profile" */ "../views/PassengersView.vue"),
-    beforeEnter: async (to, from, next) => {
+    /*beforeEnter: async (to, from, next) => {
       const canAccess = await isAuthenticated
       if (canAccess) {
         console.log("guard", isAuthenticated)
@@ -64,7 +64,28 @@ const routes: Array<RouteRecordRaw> = [
       } else {
         next({ name: 'home'})
       }
-    }
+    }*/
+  },
+  {
+    path: "/public-user/:id",
+    name: "publicUserProfile",
+    component: () =>
+        import(/* webpackChunkName: "profile" */ "../views/PublicUserProfile.vue"),
+  },
+  {
+    path: "/messenger/:id?",
+    name: "messengerView",
+    component: () =>
+        import(/* webpackChunkName: "profile" */ "../views/MessengerView.vue"),
+/*    beforeEnter: async (to, from, next) => {
+      const canAccess = await isAuthenticated
+      if (canAccess) {
+        console.log("guard", isAuthenticated)
+        return next()
+      } else {
+        next({ name: 'home'})
+      }
+    }*/
   },
 ];
 

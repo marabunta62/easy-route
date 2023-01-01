@@ -43,7 +43,7 @@
                   <q-item-label caption>Gérer mes demandes de trajets et intéragir avec les conducteurs</q-item-label>
                 </q-item-section>
               </q-item>
-              <q-item clickable>
+              <q-item clickable @click="goToTchat">
                 <q-item-section avatar>
                   <q-icon name="chat" />
                 </q-item-section>
@@ -188,7 +188,7 @@ export default class LayoutDefault extends Vue {
   }
 
   disConnexion() {
-    this.disConnexionAction(true);
+    this.disConnexionAction(false);
     this.$router.push({ name: 'home'});
   }
 
@@ -202,6 +202,10 @@ export default class LayoutDefault extends Vue {
 
   goToPassenger() {
     this.$router.push({ name: 'userPassengers'});
+  }
+
+  goToTchat() {
+    this.$router.push({ name: 'messengerView'});
   }
 
   goToHome() {
